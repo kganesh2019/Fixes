@@ -1,0 +1,14 @@
+Hi,
+
+As part of our efforts to converge and streamline our applications, we have migrated DCU from Mobius to Data Workbench.
+
+What has changed?
+-	DCU’s look and feel has been refreshed to align to that of Data Workbench. 
+-	Moving forward, please use the following URLs to access DCU (across the different environments) 
+o	Dev : https://mobiusdcud/
+o	UAT : https://mobiusdcuu/
+o	Preprod : 
+o	Prod : https://mobiusdcup/
+
+Are there any changes in the features? 
+-	No. There are no new feature added as part of this release. 
