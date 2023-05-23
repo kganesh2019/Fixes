@@ -1,0 +1,69 @@
+import cx_Oracle
+import random
+from faker import Faker
+import xlrd
+
+# Configuration
+connection_string = "username/password@localhost:1521/service_name"
+table_name = "your_table_name"
+num_rows = 10
+excel_file = "data.xlsx"  # Path to the Excel file
+
+# Connect to Oracle database
+connection = cx_Oracle.connect(connection_string)
+cursor = connection.cursor()
+
+# Extract table structure
+cursor.execute(f"SELECT column_name FROM all_tab_columns WHERE table_name = '{table_name}'")
+table_columns = [row[0] for row in cursor.fetchall()]
+
+# Read data from Excel file
+workbook = xlrd.open_workbook(excel_file)
+sheet = workbook.sheet_by_index(0)  # Assuming the data is in the first sheet
+
+# Generate mock data
+fake = Faker()
+data = []
+for _ in range(num_rows):
+    row = []
+    remaining_columns = table_columns.copy()  # Copy the table columns list
+    for column in table_columns:
+        if column in remaining_columns:  # Check if the column is still remaining
+            # Generate mock data based on column type
+            cursor.execute(f"SELECT data_type FROM all_tab_columns WHERE table_name='{table_name}' AND column_name='{column.upper()}'")
+            data_type = cursor.fetchone()[0]
+
+            if column in sheet.row_values(0):  # Check if the column exists in the Excel file
+                col_index = sheet.row_values(0).index(column)
+                value = sheet.cell_value(_ + 1, col_index)  # Row index starts from 1 in Excel
+
+                # Check if other columns from Excel exist in the table structure
+                other_columns = set(sheet.row_values(0)).intersection(remaining_columns)
+                other_values = {}
+                for other_col in other_columns:
+                    other_col_index = sheet.row_values(0).index(other_col)
+                    other_values[other_col] = sheet.cell_value(_ + 1, other_col_index)
+
+                # Replace value with other column values from Excel, if they exist in the table structure
+                for col, val in other_values.items():
+                    if col in remaining_columns:
+                        value = val
+                        remaining_columns.remove(col)  # Remove the column from the remaining columns list
+                        break
+            else:
+                if data_type == 'NUMBER':
+                    value = random.randint(1, 100)
+                elif data_type == 'VARCHAR2':
+                    value = fake.word()
+                elif data_type == 'DATE':
+                    value = fake.date_between(start_date='-30d', end_date='today')
+                else:
+                    value = None
+
+            row.append(value)
+
+    data.append(row)
+
+# Insert mock data into table
+for row in data:
+    placeholders = ','.join([':' + str(i + 1) for i in range(len(row))
