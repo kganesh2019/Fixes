@@ -1,0 +1,35 @@
+import csv
+import cx_Oracle
+
+# Oracle database connection details
+dsn = cx_Oracle.makedsn(host='<host>', port=<port>, sid='<sid>')
+username = '<username>'
+password = '<password>'
+
+# CSV file path
+csv_file = 'path/to/file.csv'
+
+def execute_query(query):
+    try:
+        with cx_Oracle.connect(dsn=dsn, user=username, password=password) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+                # Do something with the results if needed
+                # result = cursor.fetchall()
+    except cx_Oracle.DatabaseError as e:
+        return str(e)
+    return None
+
+def process_csv_file(file_path):
+    with open(file_path, 'r') as csv_file:
+        reader = csv.reader(csv_file)
+        next(reader)  # Skip header row
+        for row in reader:
+            query = row[2]  # Extract the third column
+            error_message = execute_query(query)
+            if error_message:
+                print(f"Error executing query: {error_message}")
+            else:
+                print("Query executed successfully")
+
+process_csv_file(csv_file)
