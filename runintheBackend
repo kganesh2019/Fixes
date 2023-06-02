@@ -1,0 +1,46 @@
+import cx_Oracle
+
+def execute_query(connection_string, query, query_number):
+    try:
+        # Connect to the Oracle database
+        connection = cx_Oracle.connect(connection_string)
+
+        # Create a cursor to execute SQL queries
+        cursor = connection.cursor()
+
+        # Execute the user-provided query
+        cursor.execute(query)
+
+        # Fetch all rows returned by the query
+        rows = cursor.fetchall()
+
+        # Get the number of rows returned
+        num_rows = len(rows)
+
+        # Close the cursor and the connection
+        cursor.close()
+        connection.close()
+
+        return True, num_rows
+
+    except cx_Oracle.DatabaseError as e:
+        # If there is an error, return False and the error message
+        error_message = f"Error executing Query Number {query_number}: {str(e)}"
+        return False, error_message
+
+
+# Example usage
+connection_string = "username/password@host:port/service_name"  # Replace with your Oracle connection details
+query = "SELECT * FROM employees"  # Replace with the user-provided query
+query_number = 1  # Replace with the appropriate query number
+
+success, result = execute_query(connection_string, query, query_number)
+
+if success:
+    error = "No" if success else "Yes"
+    num_rows = result
+    print(f"Query Number: {query_number}")
+    print(f"Any Errors? : {error}")
+    print(f"Number of rows: {num_rows}")
+else:
+    print(result)
